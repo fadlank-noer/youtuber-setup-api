@@ -1,4 +1,7 @@
 # Fadlan's Youtuber Setup API
 
+## Installation
+- Install GO >= 1.24.6
+
 ## Feature
-- Youtube Video Downloader
+- Youtube mp4 Video & m4a Audio Downloader
