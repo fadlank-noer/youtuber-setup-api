@@ -1,2 +1,2 @@
 .env
-lib\ytdlp\yt-dlp.exe
+lib/ytdlp/yt-dlp.exe
