@@ -1,5 +1,7 @@
 # Fadlan's Youtuber Setup API
 
+**On-Going Project & Runs only on Windows  
+
 ## Installation
 - Install GO >= 1.24.6
 
