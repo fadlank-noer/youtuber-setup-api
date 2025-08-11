@@ -1,10 +1,15 @@
 package ytdlp
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
+	"log"
+	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 
 	lib_zerolog "github.com/youtuber-setup-api/lib/zerolog"
@@ -27,10 +32,28 @@ type GetResolutionMediaFormats struct {
 	VideoAudio []GetResolutionMediaItem
 }
 
-func execYtdlpCmd(args []string) (string, error) {
+func GetYtDlpPath() string {
+	switch runtime.GOOS {
+	case "windows":
+		return "lib/ytdlp/yt-dlp.exe"
+	case "linux":
+		return "lib/ytdlp/yt-dlp"
+	case "darwin":
+		return "lib/ytdlp/yt-dlp"
+	default:
+		fmt.Println("OS tidak didukung:", runtime.GOOS)
+		os.Exit(1)
+		return ""
+	}
+}
+
+func ytdlpStringDataExtractor(args []string) (string, error) {
+	// Get Yt-Dlp Path by OS
+	ytdlpExec := GetYtDlpPath()
+
 	// Run Execution
-	lib_zerolog.Logger().Info().Msg("Run exec execYtdlpCmd()")
-	cmd := exec.Command("lib/ytdlp/yt-dlp.exe", args...)
+	lib_zerolog.Logger().Info().Msg("Run exec ytdlpStringDataExtractor()")
+	cmd := exec.Command(ytdlpExec, args...)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()
@@ -61,7 +84,7 @@ func (c *Ytdlp) GetListResolution() (GetResolutionMediaFormats, error) {
 	for i := 0; i < max_retries; i++ {
 		// Define Loop Break
 		loop_break := true
-		output_string, err := execYtdlpCmd(args)
+		output_string, err := ytdlpStringDataExtractor(args)
 
 		// Cmd error
 		if err != nil {
@@ -69,7 +92,13 @@ func (c *Ytdlp) GetListResolution() (GetResolutionMediaFormats, error) {
 		}
 
 		// Youtube Has Warning
-		if strings.Contains(output_string, "have been skipped") || !strings.Contains(output_string, "mp4a") {
+		if strings.Contains(output_string, "WARNING") || !strings.Contains(output_string, "mp4a") {
+			loop_break = false
+		}
+
+		// Video Only Not Meet Length Criteria
+		count := strings.Count(output_string, "https")
+		if count < 7 {
 			loop_break = false
 		}
 
@@ -83,8 +112,8 @@ func (c *Ytdlp) GetListResolution() (GetResolutionMediaFormats, error) {
 
 	// Check Success
 	if !cmd_success {
-		// kalau mau isi default data dari JSON
-		return metadata, errors.New("cmd execution failed!")
+		lib_zerolog.Logger().Error().Msg("GetListResolution() cmd exec failed!")
+		return metadata, errors.New("cmd execution failed")
 	}
 
 	// Split by new line
@@ -107,7 +136,6 @@ func (c *Ytdlp) GetListResolution() (GetResolutionMediaFormats, error) {
 
 		// Get Columns
 		cols := strings.Fields(line)
-		print("Cols test: ", strings.Join(cols, ", "), "\n")
 		if len(cols) >= 3 {
 			// Get video_audio
 			if strings.Contains(line, "mp4a") {
@@ -155,4 +183,85 @@ func (c *Ytdlp) GetListResolution() (GetResolutionMediaFormats, error) {
 	}
 
 	return metadata, nil
+}
+
+func (c *Ytdlp) GetVideoTitle() (string, error) {
+	// Get Video Title
+	var video_title string
+	args := []string{"-e", c.Url}
+	output_string, err := ytdlpStringDataExtractor(args)
+	if err != nil {
+		lib_zerolog.Logger().Error().Msg("GetVideoTitle() cmd exec failed!")
+		return "", errors.New("cmd execution failed")
+	}
+
+	// Split by new line
+	lines := strings.Split(output_string, "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(strings.ToLower(line), "error:") {
+			continue
+		}
+		video_title = line
+	}
+
+	return video_title, nil
+}
+
+func (c *Ytdlp) DownloadVideo(w *bufio.Writer, args []string) error {
+	// Get Yt-Dlp Path by OS
+	ytdlpExec := GetYtDlpPath()
+	args = append(args, c.Url)
+
+	// Run Execution
+	lib_zerolog.Logger().Info().Msg("Run exec ytdlp->DownloadVideo()")
+	cmd := exec.Command(ytdlpExec, args...)
+
+	// Get Stdout
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("gagal mendapatkan stdout pipe: %w", err)
+	}
+
+	// Get Stderr
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return fmt.Errorf("gagal mendapatkan stderr pipe: %w", err)
+	}
+
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("gagal menjalankan yt-dlp: %w", err)
+	}
+
+	// Log output dari stderr secara async
+	go func() {
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			log.Println("yt-dlp log:", scanner.Text())
+		}
+	}()
+
+	// Kirim stdout secara bertahap (chunk)
+	buf := make([]byte, 5*1024*1024) // 5MB chunk
+	for {
+		n, readErr := stdout.Read(buf)
+		if n > 0 {
+			if _, writeErr := w.Write(buf[:n]); writeErr != nil {
+				return fmt.Errorf("gagal menulis ke client: %w", writeErr)
+			}
+			w.Flush() // flush setiap chunk
+		}
+		if readErr != nil {
+			if readErr != io.EOF {
+				log.Println("Error membaca stdout:", readErr)
+			}
+			break
+		}
+	}
+
+	if err := cmd.Wait(); err != nil {
+		return fmt.Errorf("yt-dlp selesai dengan error: %w", err)
+	}
+
+	log.Println("Stream selesai.")
+	return nil
 }

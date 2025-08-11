@@ -12,5 +12,5 @@ func PublicRoutes(a *fiber.App) {
 
 	// Youtube
 	route.Post("/youtube/resolution_list", controllers.GetVideoResolutionList)
-	route.Get("/youtube", controllers.TestGetDownload)
+	route.Post("/youtube/download", controllers.DownloadVideo)
 }

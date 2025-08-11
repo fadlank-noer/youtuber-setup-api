@@ -1,2 +1,4 @@
 .env
 lib/ytdlp/yt-dlp.exe
+tmp
+air.exe
