@@ -50,7 +50,7 @@ func DownloadVideoService(c *fiber.Ctx, body types.YoutubeDownloadRequest) error
 	}
 
 	// Set Client Header
-	filename := "video"
+	filename := "video.mp4"
 	c.Set("Content-Type", "video/mp4")
 	c.Set("Content-Disposition", `attachment; filename="`+filename+`"`)
 

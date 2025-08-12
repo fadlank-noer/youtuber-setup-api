@@ -1,4 +1,13 @@
+# Credentials File
 .env
-lib/ytdlp/yt-dlp.exe
+
+# Temporary File
 tmp
+tmp_file
+
+# Dev Purposes
 air.exe
+
+# External Library
+lib/ytdlp/yt-dlp.exe
+lib/ffmpeg/ffmpeg.exe

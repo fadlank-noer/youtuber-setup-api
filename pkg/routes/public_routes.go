@@ -13,4 +13,7 @@ func PublicRoutes(a *fiber.App) {
 	// Youtube
 	route.Post("/youtube/resolution_list", controllers.GetVideoResolutionList)
 	route.Post("/youtube/download", controllers.DownloadVideo)
+
+	// Ffmpeg
+	route.Post("/ffmpeg/write_tmcd", controllers.WriteTmcd)
 }

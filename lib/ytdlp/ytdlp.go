@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/youtuber-setup-api/lib/zerolog"
 	lib_zerolog "github.com/youtuber-setup-api/lib/zerolog"
 )
 
@@ -32,7 +33,7 @@ type GetResolutionMediaFormats struct {
 	VideoAudio []GetResolutionMediaItem
 }
 
-func GetYtDlpPath() string {
+func GetPath() string {
 	switch runtime.GOOS {
 	case "windows":
 		return "lib/ytdlp/yt-dlp.exe"
@@ -41,7 +42,7 @@ func GetYtDlpPath() string {
 	case "darwin":
 		return "lib/ytdlp/yt-dlp"
 	default:
-		fmt.Println("OS tidak didukung:", runtime.GOOS)
+		zerolog.Logger().Error().Msg(fmt.Sprintf("%s is not supported", runtime.GOOS))
 		os.Exit(1)
 		return ""
 	}
@@ -49,7 +50,7 @@ func GetYtDlpPath() string {
 
 func ytdlpStringDataExtractor(args []string) (string, error) {
 	// Get Yt-Dlp Path by OS
-	ytdlpExec := GetYtDlpPath()
+	ytdlpExec := GetPath()
 
 	// Run Execution
 	lib_zerolog.Logger().Info().Msg("Run exec ytdlpStringDataExtractor()")
@@ -138,7 +139,7 @@ func (c *Ytdlp) GetListResolution() (GetResolutionMediaFormats, error) {
 		cols := strings.Fields(line)
 		if len(cols) >= 3 {
 			// Get video_audio
-			if strings.Contains(line, "mp4a") {
+			if strings.Contains(line, "mp4a") && !strings.Contains(line, "only") {
 				metadata.VideoAudio = append(metadata.VideoAudio, GetResolutionMediaItem{
 					ID:         cols[0],
 					Size:       cols[6],
@@ -209,7 +210,7 @@ func (c *Ytdlp) GetVideoTitle() (string, error) {
 
 func (c *Ytdlp) DownloadVideo(w *bufio.Writer, args []string) error {
 	// Get Yt-Dlp Path by OS
-	ytdlpExec := GetYtDlpPath()
+	ytdlpExec := GetPath()
 	args = append(args, c.Url)
 
 	// Run Execution

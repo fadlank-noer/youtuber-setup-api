@@ -21,6 +21,7 @@ func FiberConfig() fiber.Config {
 
 	// Return Fiber configuration.
 	return fiber.Config{
+		BodyLimit:   1024 * 1024 * 1024, // Up to 1 GB
 		ReadTimeout: time.Second * time.Duration(readTimeoutSecondsCount),
 	}
 }
