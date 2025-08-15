@@ -7,7 +7,10 @@ tmp_file
 
 # Dev Purposes
 air.exe
+air
 
 # External Library
 lib/ytdlp/yt-dlp.exe
 lib/ffmpeg/ffmpeg.exe
+lib/ffmpeg/ffmpeg
+lib/ytdlp/yt-dlp
