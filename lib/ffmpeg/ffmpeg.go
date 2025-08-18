@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"runtime"
@@ -28,9 +27,8 @@ func GetPath() string {
 }
 
 func WriteTmcd(w *bufio.Writer, args []string) error {
-	// Get Yt-Dlp Path by OS
+	// Get Exec Path by OS
 	ffmpegExec := GetPath()
-	args = append(args, "uhuy")
 
 	// Run Execution
 	zerolog.Logger().Info().Msg("Run exec ffmpeg->WriteTmcd()")
@@ -39,24 +37,24 @@ func WriteTmcd(w *bufio.Writer, args []string) error {
 	// Get Stdout
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return fmt.Errorf("gagal mendapatkan stdout pipe: %w", err)
+		return fmt.Errorf("Error getting WriteTmcd() stdout pipe: %w", err)
 	}
 
 	// Get Stderr
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		return fmt.Errorf("gagal mendapatkan stderr pipe: %w", err)
+		return fmt.Errorf("Error getting WriteTmcd() stderr pipe: %w", err)
 	}
 
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("gagal menjalankan yt-dlp: %w", err)
+		return fmt.Errorf("Error exec ffmpeg WriteTmcd(): %w", err)
 	}
 
-	// Log output dari stderr secara async
+	// Stderr logging async
 	go func() {
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
-			log.Println("ffmpeg log:", scanner.Text())
+			zerolog.Logger().Error().Msg(fmt.Sprintf("WriteTmcd() ffmpeg log: %s", scanner.Text()))
 		}
 	}()
 
@@ -66,22 +64,22 @@ func WriteTmcd(w *bufio.Writer, args []string) error {
 		n, readErr := stdout.Read(buf)
 		if n > 0 {
 			if _, writeErr := w.Write(buf[:n]); writeErr != nil {
-				return fmt.Errorf("gagal menulis ke client: %w", writeErr)
+				return fmt.Errorf("WriteTmcd() fail writing io: %w", writeErr)
 			}
 			w.Flush() // flush setiap chunk
 		}
 		if readErr != nil {
 			if readErr != io.EOF {
-				log.Println("Error membaca stdout:", readErr)
+				zerolog.Logger().Error().Msg(fmt.Sprintf("WriteTmcd() error reading io stdout: %w", readErr))
 			}
 			break
 		}
 	}
 
 	if err := cmd.Wait(); err != nil {
-		return fmt.Errorf("yt-dlp selesai dengan error: %w", err)
+		return fmt.Errorf("WriteTmcd() complete with error: %w", err)
 	}
 
-	log.Println("Write tmcd complete.")
+	zerolog.Logger().Info().Msg(fmt.Sprintf("WriteTmcd() complete."))
 	return nil
 }

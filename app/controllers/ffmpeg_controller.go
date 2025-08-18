@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/youtuber-setup-api/app/services"
 	"github.com/youtuber-setup-api/app/types"
 	"github.com/youtuber-setup-api/pkg/utils"
 )
@@ -13,7 +14,6 @@ func WriteTmcd(c *fiber.Ctx) error {
 	// Check Uploaded File
 	uploaded_file, err := utils.RequestBodyFileHandler(c, []string{"video_input"})
 	if err != nil {
-		print("Errornya apaaaa", err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error":   "Bad Request File!",
 			"message": err.Error(),
@@ -33,5 +33,5 @@ func WriteTmcd(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.SendString("File uploaded successfully")
+	return services.WriteTmcdService(c, &body)
 }
