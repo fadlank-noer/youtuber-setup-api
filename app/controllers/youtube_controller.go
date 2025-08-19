@@ -5,6 +5,7 @@ import (
 	"github.com/youtuber-setup-api/app/services"
 	"github.com/youtuber-setup-api/app/types"
 	"github.com/youtuber-setup-api/pkg/utils"
+	"github.com/youtuber-setup-api/pkg/validators"
 )
 
 func GetVideoResolutionList(c *fiber.Ctx) error {
@@ -16,6 +17,15 @@ func GetVideoResolutionList(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error":   "Bad Request Body!",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+
+	// Youtube Link Validators
+	if err := validators.YoutubeURLValidator(body.URL); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   "Invalid youtube link!",
 			"message": err.Error(),
 			"data":    nil,
 		})
@@ -33,6 +43,15 @@ func DownloadVideo(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error":   "Bad Request Body!",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+
+	// Youtube Link Validators
+	if err := validators.YoutubeURLValidator(body.URL); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   "Invalid youtube link!",
 			"message": err.Error(),
 			"data":    nil,
 		})
