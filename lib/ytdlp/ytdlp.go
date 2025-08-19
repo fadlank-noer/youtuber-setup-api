@@ -28,9 +28,16 @@ type GetResolutionMediaItem struct {
 }
 
 type GetResolutionMediaFormats struct {
-	AudioOnly  []GetResolutionMediaItem
-	VideoOnly  []GetResolutionMediaItem
-	VideoAudio []GetResolutionMediaItem
+	AudioOnly  []GetResolutionMediaItem `json:"audio_only"`
+	VideoOnly  []GetResolutionMediaItem `json:"video_only"`
+	VideoAudio []GetResolutionMediaItem `json:"video_with_audio"`
+}
+
+type GetVideoMetadata struct {
+	ID           string `json:"youtube_id"`
+	Title        string `json:"youtube_title"`
+	ThumbnailURL string `json:"youtube_thumbnail_url"`
+	Duration     string `json:"youtube_duration"`
 }
 
 func GetPath() string {
@@ -186,26 +193,34 @@ func (c *Ytdlp) GetListResolution() (GetResolutionMediaFormats, error) {
 	return metadata, nil
 }
 
-func (c *Ytdlp) GetVideoTitle() (string, error) {
+func (c *Ytdlp) GetVideoMetadata() (*GetVideoMetadata, error) {
 	// Get Video Title
-	var video_title string
-	args := []string{"-e", c.Url}
+	args := []string{"--get-duration", "--get-id", "--get-thumbnail", "-e", c.Url}
 	output_string, err := ytdlpStringDataExtractor(args)
 	if err != nil {
 		lib_zerolog.Logger().Error().Msg("GetVideoTitle() cmd exec failed!")
-		return "", errors.New("cmd execution failed")
+		return nil, errors.New("cmd execution failed")
 	}
 
-	// Split by new line
+	// Append by stdio order [title, id, thumbnail, duration]
+	var metadata_order []string
 	lines := strings.Split(output_string, "\n")
 	for _, line := range lines {
 		if strings.HasPrefix(strings.ToLower(line), "error:") {
 			continue
 		}
-		video_title = line
+		metadata_order = append(metadata_order, line)
 	}
 
-	return video_title, nil
+	// Compose Return Data
+	data := &GetVideoMetadata{
+		ID:           metadata_order[1],
+		Title:        metadata_order[0],
+		ThumbnailURL: metadata_order[2],
+		Duration:     metadata_order[3],
+	}
+
+	return data, nil
 }
 
 func (c *Ytdlp) DownloadVideo(w *bufio.Writer, args []string) error {

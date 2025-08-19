@@ -1,7 +1,14 @@
 package types
 
+import "github.com/youtuber-setup-api/lib/ytdlp"
+
 type YoutubeGetResolutionRequest struct {
 	URL string `json:"url"`
+}
+
+type YoutubeGetResolutionResponse struct {
+	ytdlp.GetVideoMetadata
+	ResolutionOption ytdlp.GetResolutionMediaFormats `json:"resolution_option"`
 }
 
 type YoutubeDownloadRequest struct {
