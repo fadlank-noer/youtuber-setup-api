@@ -15,5 +15,5 @@ func PublicRoutes(a *fiber.App) {
 	route.Post("/youtube/download", controllers.DownloadVideo)
 
 	// Ffmpeg
-	route.Post("/ffmpeg/write_tmcd", controllers.WriteTmcd)
+	route.Post("/ffmpeg/write_tmcd", controllers.WriteTmcdCompress)
 }

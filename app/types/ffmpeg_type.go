@@ -2,6 +2,7 @@ package types
 
 import "github.com/youtuber-setup-api/pkg/utils"
 
-type FfmpegWriteTmcdRequest struct {
-	VideoInput utils.RequestFileResult `json:"video_input"`
+type FfmpegTmcdCompressRequest struct {
+	VideoInput utils.RequestFileResult `form:"video_input"`
+	CRFCode    string                  `form:"crf_code"`
 }
