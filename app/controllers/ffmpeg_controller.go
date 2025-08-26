@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"path"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/youtuber-setup-api/app/services"
 	"github.com/youtuber-setup-api/app/types"
@@ -28,6 +30,12 @@ func WriteTmcdCompress(c *fiber.Ctx) error {
 
 	// Crf Code Validator
 	if err := validators.CRFCodeValidator(body.CRFCode); err != nil {
+		return utils.ResponseError(c, err, "Bad Request Body!", fiber.StatusBadRequest)
+	}
+
+	// Filetype Validator
+	filetype := path.Ext(body.VideoInput.Filename)
+	if err := validators.FfmpegServiceAllowedInput(filetype); err != nil {
 		return utils.ResponseError(c, err, "Bad Request Body!", fiber.StatusBadRequest)
 	}
 

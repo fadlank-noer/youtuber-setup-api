@@ -2,6 +2,7 @@ package validators
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/youtuber-setup-api/pkg/utils"
 )
@@ -18,4 +19,14 @@ func CRFCodeValidator(crf_code string) error {
 	}
 
 	return fmt.Errorf("Invalid crf_code!")
+}
+
+func FfmpegServiceAllowedInput(filetype string) error {
+	// Define Allowed Input
+	allowed_filetype := []string{".mp4", ".mov", ".mkv", ".avi", ".webm"}
+	if utils.Contains(allowed_filetype, filetype) {
+		return nil
+	}
+
+	return fmt.Errorf("Unaccepted filetype! | Allows only: %s", strings.Join(allowed_filetype, ", "))
 }

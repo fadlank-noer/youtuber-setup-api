@@ -25,8 +25,6 @@ func WriteTmcdCompressService(c *fiber.Ctx, body *types.FfmpegTmcdCompressReques
 		"-c:v", "libx265",
 	}
 
-	fmt.Printf("Cekk ini apaa %s", body.CRFCode)
-
 	// Compose Dynamic CRF Args
 	if utils.Contains([]string{"18", "19", "20", "21", "22"}, body.CRFCode) {
 		args = append(args, "-preset", "slow", "-crf", body.CRFCode)
