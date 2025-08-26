@@ -15,20 +15,12 @@ func GetVideoResolutionList(c *fiber.Ctx) error {
 	// General Validators
 	err := utils.RequestBodyValidator(c, &body)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   "Bad Request Body!",
-			"message": err.Error(),
-			"data":    nil,
-		})
+		return utils.ResponseError(c, err, "Bad Request Body!", fiber.StatusBadRequest)
 	}
 
 	// Youtube Link Validators
 	if err := validators.YoutubeURLValidator(body.URL); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   "Invalid youtube link!",
-			"message": err.Error(),
-			"data":    nil,
-		})
+		return utils.ResponseError(c, err, "Invalid youtube link!", fiber.StatusBadRequest)
 	}
 
 	return services.GetVideoResolutionListService(c, body)
@@ -41,20 +33,12 @@ func DownloadVideo(c *fiber.Ctx) error {
 	// General Validators
 	err := utils.RequestBodyValidator(c, &body)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   "Bad Request Body!",
-			"message": err.Error(),
-			"data":    nil,
-		})
+		return utils.ResponseError(c, err, "Bad Request Body!", fiber.StatusBadRequest)
 	}
 
 	// Youtube Link Validators
 	if err := validators.YoutubeURLValidator(body.URL); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   "Invalid youtube link!",
-			"message": err.Error(),
-			"data":    nil,
-		})
+		return utils.ResponseError(c, err, "Invalid youtube link!", fiber.StatusBadRequest)
 	}
 
 	return services.DownloadVideoService(c, body)

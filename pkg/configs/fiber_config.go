@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"github.com/youtuber-setup-api/lib/zerolog"
+	"github.com/youtuber-setup-api/pkg/utils"
 )
 
 // FiberConfig func for configuration Fiber app.
@@ -26,7 +27,8 @@ func FiberConfig() fiber.Config {
 
 	// Return Fiber configuration.
 	return fiber.Config{
-		BodyLimit:   305 * 1024 * 1024, // Up to 300 MB
-		ReadTimeout: time.Second * time.Duration(readTimeoutSecondsCount),
+		BodyLimit:    305 * 1024 * 1024, // Up to 300 MB
+		ReadTimeout:  time.Second * time.Duration(readTimeoutSecondsCount),
+		ErrorHandler: utils.ResponseServerError,
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/youtuber-setup-api/app/types"
 	"github.com/youtuber-setup-api/lib/ytdlp"
 	"github.com/youtuber-setup-api/lib/zerolog"
+	"github.com/youtuber-setup-api/pkg/utils"
 )
 
 func GetVideoResolutionListService(c *fiber.Ctx, body types.YoutubeGetResolutionRequest) error {
@@ -20,22 +21,12 @@ func GetVideoResolutionListService(c *fiber.Ctx, body types.YoutubeGetResolution
 	// Get Metadata
 	ytdata, err := ytdlp_class.GetVideoMetadata()
 	if err != nil {
-		// Error
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error":   err,
-			"message": "Unexpected Error, Please try again later",
-			"data":    nil,
-		})
+		return utils.ResponseError(c, err, "")
 	}
 
 	resolution_data, err := ytdlp_class.GetListResolution()
 	if err != nil || len(resolution_data.VideoOnly) < 1 {
-		// Error
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error":   err,
-			"message": "Unexpected Error, Please try again later",
-			"data":    nil,
-		})
+		return utils.ResponseError(c, err, "")
 	}
 
 	// Compose Data
@@ -54,11 +45,7 @@ func GetVideoResolutionListService(c *fiber.Ctx, body types.YoutubeGetResolution
 	}
 
 	// Return Data
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"error":   nil,
-		"message": "Success",
-		"data":    data,
-	})
+	return utils.ResponseSuccessJSON(c, data)
 }
 
 func DownloadVideoService(c *fiber.Ctx, body types.YoutubeDownloadRequest) error {
@@ -68,12 +55,7 @@ func DownloadVideoService(c *fiber.Ctx, body types.YoutubeDownloadRequest) error
 	}
 	ytdata, err := ytdlp_class.GetVideoMetadata()
 	if err != nil {
-		// Error
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error":   err,
-			"message": "Unexpected Error, Please try again later",
-			"data":    nil,
-		})
+		return utils.ResponseError(c, err, "")
 	}
 
 	// Set Client Header
