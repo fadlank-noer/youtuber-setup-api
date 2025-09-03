@@ -10,6 +10,7 @@ import (
 	"github.com/youtuber-setup-api/app/types"
 	"github.com/youtuber-setup-api/lib/ffmpeg"
 	"github.com/youtuber-setup-api/lib/zerolog"
+	"github.com/youtuber-setup-api/pkg/dto"
 	"github.com/youtuber-setup-api/pkg/utils"
 )
 
@@ -59,10 +60,15 @@ func WriteTmcdCompressService(c *fiber.Ctx, body *types.FfmpegTmcdCompressReques
 
 	// Stream Writer
 	c.Context().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
-		if err := ffmpeg.WriteTmcdChained(w, args1, args2); err != nil {
+		if err := ffmpeg.WriteTmcd(w, args1); err != nil {
 			zerolog.Logger().Error().Msg(fmt.Sprintln("Error streaming video:", err))
 		}
 	}))
+
+	// Service Logging
+	go dto.ServiceLogging("ffmpeg", map[string]any{
+		"filepath": filename,
+	})
 
 	return nil
 }

@@ -7,4 +7,4 @@ sql:
       go:
         package: "query"
         out: "query"
-        sql_package: "lib/pq"
+        sql_package: "database/sql"
