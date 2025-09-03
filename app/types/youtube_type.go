@@ -15,3 +15,9 @@ type YoutubeDownloadRequest struct {
 	YoutubeGetResolutionRequest
 	ID string `json:"resolution_id"`
 }
+
+type YoutubeDownloadSectionRequest struct {
+	YoutubeDownloadRequest
+	StartTime string `json:"start_time"`
+	EndTime   string `json:"end_time"`
+}

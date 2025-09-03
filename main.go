@@ -15,7 +15,8 @@ func main() {
 	// Configure Zerolog Timestamp
 	zerolog.SetupZerolog()
 
-	// Define Fiber config.
+	// Initialize and Define Fiber config.
+	configs.InitializeApp()
 	config := configs.FiberConfig()
 
 	// Define a new Fiber app with config.

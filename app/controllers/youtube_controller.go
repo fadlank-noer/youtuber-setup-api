@@ -43,3 +43,26 @@ func DownloadVideo(c *fiber.Ctx) error {
 
 	return services.DownloadVideoService(c, body)
 }
+
+func DownloadVideoSection(c *fiber.Ctx) error {
+	// Get Request Body
+	var body types.YoutubeDownloadSectionRequest
+
+	// General Validators
+	err := utils.RequestBodyValidator(c, &body)
+	if err != nil {
+		return utils.ResponseError(c, err, "Bad Request Body!", fiber.StatusBadRequest)
+	}
+
+	// Youtube Link Validators
+	if err := validators.YoutubeURLValidator(body.URL); err != nil {
+		return utils.ResponseError(c, err, "Bad Request Body!", fiber.StatusBadRequest)
+	}
+
+	// Youtube Section Validators
+	if err := validators.ValidateSectionTimes(body.StartTime, body.EndTime); err != nil {
+		return utils.ResponseError(c, err, "Bad Request Body!", fiber.StatusBadRequest)
+	}
+
+	return services.DownloadVideoSectionService(c, body)
+}

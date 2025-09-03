@@ -227,6 +227,7 @@ func (c *Ytdlp) DownloadVideo(w *bufio.Writer, args []string) error {
 	// Get Yt-Dlp Path by OS
 	ytdlpExec := GetPath()
 	args = append(args, c.Url)
+	fmt.Printf("Args: \n%s", strings.Join(args, " "))
 
 	// Run Execution
 	lib_zerolog.Logger().Info().Msg("Run exec ytdlp->DownloadVideo()")

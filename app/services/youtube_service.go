@@ -59,13 +59,48 @@ func DownloadVideoService(c *fiber.Ctx, body types.YoutubeDownloadRequest) error
 	}
 
 	// Set Client Header
-	filename := fmt.Sprintf("%s.mp4", ytdata.ID)
+	filename := fmt.Sprintf("%s_youtube.mp4", ytdata.ID)
 	c.Set("Content-Type", "video/mp4")
 	c.Set("Content-Disposition", `attachment; filename="`+filename+`"`)
 
 	// Stream Writer
 	c.Context().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
 		if err := ytdlp_class.DownloadVideo(w, []string{"-f", body.ID, "-o", "-"}); err != nil {
+			zerolog.Logger().Error().Msg(fmt.Sprintln("Error streaming video:", err))
+		}
+	}))
+
+	return nil
+}
+
+func DownloadVideoSectionService(c *fiber.Ctx, body types.YoutubeDownloadSectionRequest) error {
+	// Exec yt-dlp get video id
+	ytdlp_class := ytdlp.Ytdlp{
+		Url: body.URL,
+	}
+	ytdata, err := ytdlp_class.GetVideoMetadata()
+	if err != nil {
+		return utils.ResponseError(c, err, "")
+	}
+
+	// Set Client Header
+	filename := fmt.Sprintf("%s_youtube.mp4", ytdata.ID)
+	c.Set("Content-Type", "video/mp4")
+	c.Set("Content-Disposition", `attachment; filename="`+filename+`"`)
+
+	// Section Check
+	section := fmt.Sprintf("\"*%s-%s\"", body.StartTime, body.EndTime)
+
+	// Args Builder
+	args := []string{
+		"-f", body.ID,
+		"--download-sections", section, "--force-keyframes-at-cuts",
+		"-o", "-",
+	}
+
+	// Stream Writer
+	c.Context().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
+		if err := ytdlp_class.DownloadVideo(w, args); err != nil {
 			zerolog.Logger().Error().Msg(fmt.Sprintln("Error streaming video:", err))
 		}
 	}))

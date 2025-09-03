@@ -4,6 +4,7 @@
 # Temporary File
 tmp
 tmp_file
+tmp_public
 
 # Dev Purposes
 air.exe

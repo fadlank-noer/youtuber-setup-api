@@ -3,6 +3,7 @@ package validators
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 func YoutubeURLValidator(url string) error {
@@ -22,5 +23,27 @@ func YoutubeURLValidator(url string) error {
 		}
 	}
 
-	return fmt.Errorf("Invalid youtube link!")
+	return fmt.Errorf("invalid youtube link")
+}
+
+func ValidateSectionTimes(start, end string) error {
+	// Valid format section: HH:MM:SS.s
+	layout := "15:04:05.0"
+
+	startTime, err := time.Parse(layout, start)
+	if err != nil {
+		return fmt.Errorf("wrong start_time format: HH:MM:SS.s")
+	}
+
+	endTime, err := time.Parse(layout, end)
+	if err != nil {
+		return fmt.Errorf("wrong end_time format: HH:MM:SS.s")
+	}
+
+	// Validate end >= start
+	if endTime.Before(startTime) {
+		return fmt.Errorf("end_time cannot be less than start_time")
+	}
+
+	return nil
 }
