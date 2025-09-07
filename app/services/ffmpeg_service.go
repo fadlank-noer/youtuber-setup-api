@@ -15,11 +15,27 @@ import (
 )
 
 func WriteTmcdCompressService(c *fiber.Ctx, body *types.FfmpegTmcdCompressRequest) error {
+	// Initialize service logger
+	logger := dto.NewServiceLogger("VIDEO_COMPRESS", "success")
+
+	// Get user info
+	ip := c.IP()
+	logger.SetUserInfo(nil, &ip, nil, nil, nil)
+
 	// Set Client Header
 	filename := "video.mp4"
 	c.Set("Content-Type", "video/mp4")
 	c.Set("Content-Disposition", `attachment; filename="`+filename+`"`)
 	c.Set("Connection", "Keep-Alive")
+
+	// Get input file size for logging
+	var inputSize int64
+	if body.VideoInput.TmpFileloc != "" {
+		// Could add file size calculation here if needed
+		inputSize = 0 // Placeholder
+	}
+	codec := "libx264"
+	logger.SetFFmpegFields(&inputSize, nil, &codec, &body.CRFCode)
 
 	// Compose Args
 	args1 := []string{
@@ -61,14 +77,12 @@ func WriteTmcdCompressService(c *fiber.Ctx, body *types.FfmpegTmcdCompressReques
 	// Stream Writer
 	c.Context().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
 		if err := ffmpeg.WriteTmcd(w, args1); err != nil {
+			logger.SetError(err).Complete()
 			zerolog.Logger().Error().Msg(fmt.Sprintln("Error streaming video:", err))
+		} else {
+			logger.SetField("filename", filename).SetField("crf_code", body.CRFCode).Complete()
 		}
 	}))
-
-	// Service Logging
-	go dto.ServiceLogging("ffmpeg", map[string]any{
-		"filepath": filename,
-	})
 
 	return nil
 }
